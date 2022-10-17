@@ -34,86 +34,88 @@ from utils.loss import SegmentationLosses
 from model.FPN import FPN
 from model.resnet import resnet
 
+
 def parse_args():
     """
     Parse input arguments
     """
-    parser = argparse.ArgumentParser(description='Train a FPN Semantic Segmentation network')
+    parser = argparse.ArgumentParser(
+        description='Train a FPN Semantic Segmentation network')
     parser.add_argument('--dataset', dest='dataset',
-					    help='training dataset',
-					    default='Cityscapes', type=str)
+                        help='training dataset',
+                        default='Cityscapes', type=str)
     parser.add_argument('--net', dest='net',
-					    help='resnet101, res152, etc',
-					    default='resnet101', type=str)
+                        help='resnet101, res152, etc',
+                        default='resnet101', type=str)
     parser.add_argument('--start_epoch', dest='start_epoch',
-					    help='starting epoch',
-					    default=1, type=int)
+                        help='starting epoch',
+                        default=1, type=int)
     parser.add_argument('--epochs', dest='epochs',
-					    help='number of iterations to train',
-					    default=110, type=int)
+                        help='number of iterations to train',
+                        default=110, type=int)
     parser.add_argument('--save_dir', dest='save_dir',
-					    help='directory to save models',
-					    default=None,
-					    nargs=argparse.REMAINDER)
+                        help='directory to save models',
+                        default=None,
+                        nargs=argparse.REMAINDER)
     parser.add_argument('--num_workers', dest='num_workers',
-					    help='number of worker to load data',
-					    default=0, type=int)
+                        help='number of worker to load data',
+                        default=0, type=int)
     # cuda
     parser.add_argument('--cuda', dest='cuda',
-                      help='whether use CUDA'
-                      default=True, type=bool)
+                        help='whether use CUDA',
+                        default=True, type=bool)
     # multiple GPUs
     parser.add_argument('--mGPUs', dest='mGPUs', type=bool,
-					    help='whether use multiple GPUs',
+                        help='whether use multiple GPUs',
                         default=False,)
     parser.add_argument('--gpu_ids', dest='gpu_ids',
                         help='use which gpu to train, must be a comma-separated list of integers only (defalt=0)',
                         default='0', type=str)
     # batch size
     parser.add_argument('--batch_size', dest='batch_size',
-					    help='batch_size',
-					    default=None, type=int)
+                        help='batch_size',
+                        default=None, type=int)
 
     # config optimization
     parser.add_argument('--o', dest='optimizer',
-					    help='training optimizer',
-					    default='sgd', type=str)
+                        help='training optimizer',
+                        default='sgd', type=str)
     parser.add_argument('--lr', dest='lr',
-					    help='starting learning rate',
-					    default=0.01, type=float)
+                        help='starting learning rate',
+                        default=0.01, type=float)
     parser.add_argument('--weight_decay', dest='weight_decay',
                         help='weight_decay',
                         default=1e-5, type=float)
     parser.add_argument('--lr_decay_step', dest='lr_decay_step',
-					    help='step to do learning rate decay, uint is epoch',
-					    default=50, type=int)
+                        help='step to do learning rate decay, uint is epoch',
+                        default=50, type=int)
     parser.add_argument('--lr_decay_gamma', dest='lr_decay_gamma',
-					    help='learning rate decay ratio',
-					    default=0.1, type=float)
+                        help='learning rate decay ratio',
+                        default=0.1, type=float)
 
     # set training session
     parser.add_argument('--s', dest='session',
-					    help='training session',
-					    default=1, type=int)
+                        help='training session',
+                        default=1, type=int)
 
     # resume trained model
     parser.add_argument('--r', dest='resume',
-					    help='resume checkpoint or not',
-					    default=False, type=bool)
+                        help='resume checkpoint or not',
+                        default=False, type=bool)
     parser.add_argument('--checksession', dest='checksession',
-					    help='checksession to load model',
-					    default=1, type=int)
+                        help='checksession to load model',
+                        default=1, type=int)
     parser.add_argument('--checkepoch', dest='checkepoch',
-					    help='checkepoch to load model',
-					    default=1, type=int)
+                        help='checkepoch to load model',
+                        default=1, type=int)
     parser.add_argument('--checkpoint', dest='checkpoint',
-					    help='checkpoint to load model',
-					    default=0, type=int)
+                        help='checkpoint to load model',
+                        default=0, type=int)
 
     # log and display
     parser.add_argument('--use_tfboard', dest='use_tfboard',
-					    help='whether use tensorflow tensorboard',
-					    default=True, type=bool)
+                        help='whether use tensorflow tensorboard',
+                        default=True, type=bool)
 
     # configure validation
     parser.add_argument('--no_val', dest='no_val',
@@ -138,27 +140,33 @@ def parse_args():
 
 class sampler(Sampler):
     def __init__(self, train_size, batch_size):
-        num_data = train_size
-        self.num_per_batch = int(num_data / batch_size)
+        self.num_data = train_size
+        self.num_per_batch = int(self.num_data / batch_size)
         self.batch_size = batch_size
         self.range = torch.arange(0, batch_size).view(1, batch_size).long()
         self.leftover_flag = False
-        if num_data % batch_size:
-            self.leftover = torch.randperm(self.num_per_batch*batch_size, num_data).long()
+        if self.num_data % batch_size:
+            self.leftover = torch.randperm(
+                self.num_per_batch*batch_size, self.num_data).long()
             self.leftover_flag = True
+
     def __iter__(self):
-        rand_num = torch.randperm(self.num_per_batch).view(-1, 1) * self.batch_size
-        self.rand_num = rand_num.expand(self.num_per_batch, self.batch_size) + self.range
+        rand_num = torch.randperm(
+            self.num_per_batch).view(-1, 1) * self.batch_size
+        self.rand_num = rand_num.expand(
+            self.num_per_batch, self.batch_size) + self.range
 
         self.rand_num_view = self.rand_num.view(-1)
 
         if self.leftover_flag:
-            self.rand_num_view = torch.cat((self.rand_num_view, self.leftover),0)
+            self.rand_num_view = torch.cat(
+                (self.rand_num_view, self.leftover), 0)
 
         return iter(self.rand_num_view)
 
     def __len__(self):
-        return num_data
+        return self.num_data
+
 
 def adjust_learning_rate(optimizer, decay=0.1):
     """Sets the learning rate to the initial LR decayed by 0.5 every 20 epochs"""
@@ -181,49 +189,57 @@ class Trainer(object):
         # Define Dataloader
         if args.dataset == 'CamVid':
             size = 512
-            train_file = os.path.join(os.getcwd() + "\\data\\CamVid", "train.csv")
+            train_file = os.path.join(
+                os.getcwd() + "\\data\\CamVid", "train.csv")
             val_file = os.path.join(os.getcwd() + "\\data\\CamVid", "val.csv")
             print('=>loading datasets')
             train_data = CamVidDataset(csv_file=train_file, phase='train')
             self.train_loader = torch.utils.data.DataLoader(train_data,
-                                                     batch_size=args.batch_size,
-                                                     shuffle=True,
-                                                     num_workers=args.num_workers)
-            val_data = CamVidDataset(csv_file=val_file, phase='val', flip_rate=0)
+                                                            batch_size=args.batch_size,
+                                                            shuffle=True,
+                                                            num_workers=args.num_workers)
+            val_data = CamVidDataset(
+                csv_file=val_file, phase='val', flip_rate=0)
             self.val_loader = torch.utils.data.DataLoader(val_data,
-                                                     batch_size=args.batch_size,
-                                                     shuffle=True,
-                                                     num_workers=args.num_workers)
+                                                          batch_size=args.batch_size,
+                                                          shuffle=True,
+                                                          num_workers=args.num_workers)
             self.num_class = 32
         elif args.dataset == 'Cityscapes':
             kwargs = {'num_workers': args.num_workers, 'pin_memory': True}
-            self.train_loader, self.val_loader, self.test_loader, self.num_class = make_data_loader(args, **kwargs)
+            self.train_loader, self.val_loader, self.test_loader, self.num_class = make_data_loader(
+                args, **kwargs)
         elif args.dataset == 'NYUDv2':
-        kwargs = {'num_workers': args.num_workers, 'pin_memory': True}
-        self.train_loader, self.val_loader, self.num_class = make_data_loader(args, **kwargs)
+            kwargs = {'num_workers': args.num_workers, 'pin_memory': True}
+            self.train_loader, self.val_loader, self.num_class = make_data_loader(
+                args, **kwargs)
 
         # Define network
         if args.net == 'resnet101':
-            blocks = [2,4,23,3]
+            blocks = [2, 4, 23, 3]
             fpn = FPN(blocks, self.num_class, back_bone=args.net)
 
         # Define Optimizer
         self.lr = self.args.lr
         if args.optimizer == 'adam':
             self.lr = self.lr * 0.1
-            optimizer = torch.optim.Adam(fpn.parameters(), lr=args.lr, momentum=0, weight_decay=args.weight_decay)
+            optimizer = torch.optim.Adam(
+                fpn.parameters(), lr=args.lr, momentum=0, weight_decay=args.weight_decay)
         elif args.optimizer == 'sgd':
-            optimizer = torch.optim.SGD(fpn.parameters(), lr=args.lr, momentum=0, weight_decay=args.weight_decay)
+            optimizer = torch.optim.SGD(
+                fpn.parameters(), lr=args.lr, momentum=0, weight_decay=args.weight_decay)
 
         # Define Criterion
         if args.dataset == 'CamVid':
             self.criterion = nn.CrossEntropyLoss()
         elif args.dataset == 'Cityscapes':
             weight = None
-            self.criterion = SegmentationLosses(weight=weight, cuda=args.cuda).build_loss(mode='ce')
+            self.criterion = SegmentationLosses(
+                weight=weight, cuda=args.cuda).build_loss(mode='ce')
         elif args.dataset == 'NYUDv2':
             weight = None
-            self.criterion = SegmentationLosses(weight = weight, cuda=args.cuda).build_loss(mode='ce')
+            self.criterion = SegmentationLosses(
+                weight=weight, cuda=args.cuda).build_loss(mode='ce')
 
         self.model = fpn
         self.optimizer = optimizer
@@ -233,7 +249,8 @@ class Trainer(object):
 
         # multiple mGPUs
         if args.mGPUs:
-            self.model = torch.nn.DataParallel(self.model, device_ids=self.args.gpu_ids)
+            self.model = torch.nn.DataParallel(
+                self.model, device_ids=self.args.gpu_ids)
 
         # Using cuda
         if args.cuda:
@@ -242,14 +259,17 @@ class Trainer(object):
         # Resuming checkpoint
         self.best_pred = 0.0
         if args.resume:
-            output_dir = os.path.join(args.save_dir, args.dataset, args.checkname)
+            output_dir = os.path.join(
+                args.save_dir, args.dataset, args.checkname)
             runs = sorted(glob.glob(os.path.join(output_dir, 'experiment_*')))
             run_id = int(runs[-1].split('_')[-1]) - 1 if runs else 0
-            experiment_dir = os.path.join(output_dir, 'experiment_{}'.format(str(run_id)))
+            experiment_dir = os.path.join(
+                output_dir, 'experiment_{}'.format(str(run_id)))
             load_name = os.path.join(experiment_dir,
-                                 'checkpoint.pth.tar')
+                                     'checkpoint.pth.tar')
             if not os.path.isfile(load_name):
-                raise RuntimeError("=> no checkpoint found at '{}'".format(load_name))
+                raise RuntimeError(
+                    "=> no checkpoint found at '{}'".format(load_name))
             checkpoint = torch.load(load_name)
             args.start_epoch = checkpoint['epoch']
             if args.cuda:
@@ -259,11 +279,11 @@ class Trainer(object):
             self.optimizer.load_state_dict(checkpoint['optimizer'])
             self.best_pred = checkpoint['best_pred']
             self.lr = checkpoint['optimizer']['param_groups'][0]['lr']
-            print("=> loaded checkpoint '{}'(epoch {})".format(load_name, checkpoint['epoch']))
+            print("=> loaded checkpoint '{}'(epoch {})".format(
+                load_name, checkpoint['epoch']))
 
         self.lr_stage = [68, 93]
         self.lr_staget_ind = 0
-
 
     def training(self, epoch):
         train_loss = 0.0
@@ -299,16 +319,19 @@ class Trainer(object):
             # tbar.set_description('\rTrain loss:%.3f' % (train_loss / (iteration + 1)))
 
             if iteration % 10 == 0:
-                print("Epoch[{}]({}/{}):Loss:{:.4f}, learning rate={}".format(epoch, iteration, len(self.train_loader), loss.data, self.lr))
+                print("Epoch[{}]({}/{}):Loss:{:.4f}, learning rate={}".format(epoch,
+                      iteration, len(self.train_loader), loss.data, self.lr))
 
-            self.writer.add_scalar('train/total_loss_iter', loss.item(), iteration + num_img_tr * epoch)
+            self.writer.add_scalar(
+                'train/total_loss_iter', loss.item(), iteration + num_img_tr * epoch)
 
-            #if iteration % (num_img_tr // 10) == 0:
+            # if iteration % (num_img_tr // 10) == 0:
             #    global_step = iteration + num_img_tr * epoch
             #    self.summary.visualize_image(self.witer, self.args.dataset, image, target, outputs, global_step)
 
         self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
-        print('[Epoch: %d, numImages: %5d]' % (epoch, iteration * self.args.batch_size + image.data.shape[0]))
+        print('[Epoch: %d, numImages: %5d]' %
+              (epoch, iteration * self.args.batch_size + image.data.shape[0]))
         print('Loss: %.3f' % train_loss)
 
         if self.args.no_val:
@@ -319,8 +342,7 @@ class Trainer(object):
                 'state_dict': self.model.module.state_dict(),
                 'optimizer': self.optimizer.state_dict(),
                 'best_pred': self.best_pred,
-                }, is_best)
-
+            }, is_best)
 
     def validation(self, epoch):
         self.model.eval()
@@ -360,8 +382,10 @@ class Trainer(object):
         self.writer.add_scalar('val/Acc_class', Acc_class, epoch)
         self.writer.add_scalar('val/FWIoU', FWIoU, epoch)
         print('Validation:')
-        print('[Epoch: %d, numImages: %5d]' % (epoch, iter * self.args.batch_size + image.shape[0]))
-        print("Acc:{:.5f}, Acc_class:{:.5f}, mIoU:{:.5f}, fwIoU:{:.5f}".format(Acc, Acc_class, mIoU, FWIoU))
+        print('[Epoch: %d, numImages: %5d]' %
+              (epoch, iter * self.args.batch_size + image.shape[0]))
+        print("Acc:{:.5f}, Acc_class:{:.5f}, mIoU:{:.5f}, fwIoU:{:.5f}".format(
+            Acc, Acc_class, mIoU, FWIoU))
         print('Loss: %.3f' % test_loss)
 
         new_pred = mIoU
@@ -387,7 +411,8 @@ def main():
         try:
             args.gpu_ids = [int(s) for s in args.gpu_ids.split(',')]
         except ValueError:
-            raise ValueError('Argument --gpu_ids must be a comma-separated list of itegers only')
+            raise ValueError(
+                'Argument --gpu_ids must be a comma-separated list of itegers only')
 
     if args.batch_size is None:
         args.batch_size = 4 * len(args.gpu_ids)
@@ -396,7 +421,8 @@ def main():
         lrs = {
             'cityscapes': 0.01,
         }
-        args.lr = lrs[args.dataset.lower()] / (4 * len(args.gpu_ids)) * args.batch_size
+        args.lr = lrs[args.dataset.lower()] / \
+            (4 * len(args.gpu_ids)) * args.batch_size
 
     print(args)
     trainer = Trainer(args)
@@ -407,6 +433,7 @@ def main():
         if not trainer.args.no_val and epoch % args.eval_interval == (args.eval_interval - 1):
             trainer.validation(epoch)
     trainer.writer.close()
+
 
 if __name__ == '__main__':
     main()

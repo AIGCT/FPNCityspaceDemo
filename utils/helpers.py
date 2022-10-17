@@ -1,11 +1,7 @@
-import cv2
 import numpy as np
-import itertools
-import operator
-import os, csv
-import tensorflow as tf
+import os
+import csv
 
-import time, datetime
 
 def get_label_info(csv_path):
     """
@@ -14,7 +10,7 @@ def get_label_info(csv_path):
 
     # Arguments
         csv_path: The file path of the class dictionairy
-        
+
     # Returns
         Two lists: one for the class names and the other for the label values
     """
@@ -42,7 +38,7 @@ def one_hot_it(label, label_values):
     # Arguments
         label: The 2D array segmentation image label
         label_values
-        
+
     # Returns
         A 2D array with the same width and hieght as the input, but
         with a depth size of num_classes
@@ -66,13 +62,14 @@ def one_hot_it(label, label_values):
     for colour in label_values:
         # colour_map = np.full((label.shape[0], label.shape[1], label.shape[2]), colour, dtype=int)
         equality = np.equal(label, colour)
-        class_map = np.all(equality, axis = -1)
+        class_map = np.all(equality, axis=-1)
         semantic_map.append(class_map)
     semantic_map = np.stack(semantic_map, axis=-1)
     # print("Time 2 = ", time.time() - st)
 
     return semantic_map
-    
+
+
 def reverse_one_hot(image):
     """
     Transform a 2D array in one-hot format (depth is num_classes),
@@ -81,7 +78,7 @@ def reverse_one_hot(image):
 
     # Arguments
         image: The one-hot format image 
-        
+
     # Returns
         A 2D array with the same width and hieght as the input, but
         with a depth size of 1, where each pixel value is the classified 
@@ -96,7 +93,7 @@ def reverse_one_hot(image):
     #         index, value = max(enumerate(image[i, j, :]), key=operator.itemgetter(1))
     #         x[i, j] = index
 
-    x = np.argmax(image, axis = -1)
+    x = np.argmax(image, axis=-1)
     return x
 
 
@@ -107,7 +104,7 @@ def colour_code_segmentation(image, label_values):
     # Arguments
         image: single channel array where each value represents the class key.
         label_values
-        
+
     # Returns
         Colour coded image for segmentation visualization
     """
@@ -119,7 +116,7 @@ def colour_code_segmentation(image, label_values):
     # for i in range(0, w):
     #     for j in range(0, h):
     #         x[i, j, :] = colour_codes[int(image[i, j])]
-    
+
     colour_codes = np.array(label_values)
     x = colour_codes[image.astype(int)]
 
