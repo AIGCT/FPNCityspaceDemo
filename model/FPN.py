@@ -45,7 +45,7 @@ class Bottleneck(nn.Module):
 
 class FPN(nn.Module):
 
-    def __init__(self, num_blocks, num_classes, pretrained=True):
+    def __init__(self, num_blocks, num_classes=19, pretrained=False):
         super(FPN, self).__init__()
         self.in_planes = 64
         self.num_classes = num_classes
@@ -55,7 +55,8 @@ class FPN(nn.Module):
         self.bn1 = nn.BatchNorm2d(64)
 
         BatchNorm = nn.BatchNorm2d
-        self.back_bone = ResNet101(pretrained=True)
+
+        self.back_bone = ResNet101(pretrained=False)
 
         # Bottom-up layers
         self.layer1 = self._make_layer(
@@ -170,6 +171,7 @@ class FPN(nn.Module):
         s3 = self._upsample(F.relu(self.gn1(self.semantic_branch(p3))), h, w)
 
         s2 = F.relu(self.gn1(self.semantic_branch(p2)))
+
         return self._upsample(self.conv3(s2 + s3 + s4 + s5), 4 * h, 4 * w)
 
     def _init_weights(self):
@@ -189,7 +191,7 @@ class FPN(nn.Module):
 
 if __name__ == "__main__":
 
-    model = FPN([2, 4, 23, 3], 32)
-    input = torch.rand(128, 3, 512, 1024)
+    model = FPN([2, 4, 23, 3], 19)
+    input = torch.rand(2, 3, 256, 256)
     output = model(input)
     print(output.size())

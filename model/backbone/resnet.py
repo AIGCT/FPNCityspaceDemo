@@ -160,10 +160,10 @@ if __name__ == "__main__":
 
     model = ResNet101(pretrained=True)
     model.cuda()
-    summary(model, (3, 512, 512))
-    # input = torch.rand(1, 3, 512, 512)
-    # input = Variable(input.cuda())
-    # low_level_features = model(input)
-    # print(len(low_level_features))
-    # for i in range(len(low_level_features)):
-    #     print(low_level_features[i].size())
+    summary(model, (3, 256, 256))
+    input = torch.rand(1, 3, 256, 256)
+    input = Variable(input.cuda())
+    low_level_features = model(input)
+    print(len(low_level_features))
+    for i in range(len(low_level_features)):
+        print(low_level_features[i].size())
