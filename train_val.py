@@ -22,7 +22,6 @@ from datetime import datetime
 import torchvision.transforms as transforms
 from torch.utils.data.sampler import Sampler
 
-from data.CamVid_loader import CamVidDataset
 from data import make_data_loader
 from mypath import Path
 
@@ -55,7 +54,7 @@ def parse_args():
                         default=110, type=int)
     parser.add_argument('--save_dir', dest='save_dir',
                         help='directory to save models',
-                        default=None,
+                        default="output", type=str,
                         nargs=argparse.REMAINDER)
     parser.add_argument('--num_workers', dest='num_workers',
                         help='number of worker to load data',
