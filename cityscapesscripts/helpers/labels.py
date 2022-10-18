@@ -199,3 +199,5 @@ if __name__ == "__main__":
     name = trainId2label[trainId].name
     print("Name of label with trainID '{id}': {name}".format(
         id=trainId, name=name))
+
+    # label 生成工具
