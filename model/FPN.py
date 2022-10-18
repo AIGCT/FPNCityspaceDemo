@@ -8,7 +8,7 @@ from torchvision.models.resnet import ResNet
 from math import sqrt
 from torch.autograd import Variable
 
-from model.backbone import build_backbone
+from backbone import build_backbone
 
 
 class Bottleneck(nn.Module):
