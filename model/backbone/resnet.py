@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
 from torch.autograd import Variable
+from torchsummary import summary
 
 __all__ = ['ResNet', 'resnet50', 'resnet101', 'resnet152']
 
@@ -112,7 +113,7 @@ class ResNet(nn.Module):
         low_level_feat4 = x
         x = self.layer4(x)
         low_level_feat5 = x
-        
+
         return [low_level_feat1, low_level_feat2, low_level_feat3, low_level_feat4, low_level_feat5]
 
     def _init_weights(self):
@@ -156,11 +157,13 @@ def ResNet101(pretrained=True):
 
 
 if __name__ == "__main__":
+
     model = ResNet101(pretrained=True)
     model.cuda()
-    input = torch.rand(1, 3, 512, 512)
-    input = Variable(input.cuda())
-    low_level_features = model(input)
-    print(len(low_level_features))
-    for i in range(len(low_level_features)):
-        print(low_level_features[i].size())
+    summary(model, (3, 512, 512))
+    # input = torch.rand(1, 3, 512, 512)
+    # input = Variable(input.cuda())
+    # low_level_features = model(input)
+    # print(len(low_level_features))
+    # for i in range(len(low_level_features)):
+    #     print(low_level_features[i].size())

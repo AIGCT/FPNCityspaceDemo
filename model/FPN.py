@@ -8,7 +8,7 @@ from torchvision.models.resnet import ResNet
 from math import sqrt
 from torch.autograd import Variable
 
-from backbone import build_backbone
+from backbone.resnet import ResNet101
 
 
 class Bottleneck(nn.Module):
@@ -45,7 +45,7 @@ class Bottleneck(nn.Module):
 
 class FPN(nn.Module):
 
-    def __init__(self, num_blocks, num_classes, back_bone='resnet', pretrained=True):
+    def __init__(self, num_blocks, num_classes, pretrained=True):
         super(FPN, self).__init__()
         self.in_planes = 64
         self.num_classes = num_classes
@@ -55,7 +55,7 @@ class FPN(nn.Module):
         self.bn1 = nn.BatchNorm2d(64)
 
         BatchNorm = nn.BatchNorm2d
-        self.back_bone = build_backbone(back_bone)
+        self.back_bone = ResNet101(pretrained=True)
 
         # Bottom-up layers
         self.layer1 = self._make_layer(
@@ -127,6 +127,7 @@ class FPN(nn.Module):
     def forward(self, x):
         # Bottom-up using backbone
         low_level_features = self.back_bone(x)
+        print(len(low_level_features))
         c1 = low_level_features[0]
         c2 = low_level_features[1]
         c3 = low_level_features[2]
@@ -187,7 +188,8 @@ class FPN(nn.Module):
 
 
 if __name__ == "__main__":
-    model = FPN([2, 4, 23, 3], 32, back_bone="resnet")
-    input = torch.rand(1, 3, 512, 1024)
+
+    model = FPN([2, 4, 23, 3], 32)
+    input = torch.rand(128, 3, 512, 1024)
     output = model(input)
     print(output.size())
