@@ -54,13 +54,17 @@ mkdir Cityscapes
 
 **将代码单独生成在Cityscapes/trainImg目录下**
 
-运行数据转移代码
+> 运行数据转移代码
 
 `python3 utils/dataMove.py`
 
-运行标签转移代码
+> 运行标签转移代码
 
 `python3 utils/labelMove.py`
+
+> 编写dataset类 生成训练格式的数据
+
+`python3 utils/dataset.py`
 
 ## 1 模型文件
 
