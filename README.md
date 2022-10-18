@@ -8,4 +8,4 @@
 >
 > 文件说明
 >
-> ![img](image/README/intro script.png "intro script")
+> ![img](image/README/intro_script.png)
