@@ -70,7 +70,9 @@ mkdir Cityscapes
 
 详见
 
-> model
+> model/bacjbone/resnet.py
+>
+> model/FPN.py
 
 ## 2 训练脚本
 
