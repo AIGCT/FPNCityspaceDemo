@@ -1,20 +1,26 @@
 # FPNdemo
 
-> 环境：
->
+环境：
+
 > NVIDIA GeForce RTX 3090 One
->
+
 > cityscapesscripts==2.2.0
->
+
 > torch==1.10.2+cu113
->
+
 > torch-tb-profiler==0.4.0
->
+
 > torchaudio==0.10.2+cu113
->
+
 > torchsummary==1.5.1
->
+
 > torchvision==0.11.3+cu113
+
+> openpyxl==3.0.10
+
+运行如下代码即可：
+
+`pip3 install -r requirements.txt`
 
 ## 0 数据生成
 
@@ -70,7 +76,7 @@ mkdir Cityscapes
 
 详见
 
-> model/bacjbone/resnet.py
+> model/resnet.py
 >
 > model/FPN.py
 
@@ -78,6 +84,14 @@ mkdir Cityscapes
 
 ### 2.1 loss
 
+采用 CrossEntropyLoss
+
 ### 2.2 Metrics
 
+采用 d2l中写好的ACC计算函数
+
 ### 2.3 traner
+
+运行如下脚本
+
+`python3 train.py`
