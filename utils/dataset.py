@@ -4,21 +4,14 @@ import albumentations as A
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
-import os.path as osp
 import warnings
-from tqdm import tqdm
-from torch.utils.data import Dataset, DataLoader, random_split
-from torch import optim
-import torch.nn.functional as F
-import torch.optim as optim
-import torch.nn as nn
+from torch.utils.data import DataLoader
 import torch
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 warnings.filterwarnings("ignore")
 torch.manual_seed(17)
-
 
 # 设置数据集路径
 x_train_dir = "/home/yangdenghui/nfs/yangdenghui/SemanticSegmentationUsingPFPN/Cityscapes/trainImg/train"
@@ -43,7 +36,7 @@ class CityScapesDataset(torch.utils.data.Dataset):
 
     def __init__(self, images_dir, masks_dir):
         self.transform = A.Compose([
-            A.Resize(224, 448),
+            A.Resize(256, 256),
             A.HorizontalFlip(),
             # A.RandomBrightnessContrast(),
             A.RandomSnow(),
@@ -71,6 +64,9 @@ class CityScapesDataset(torch.utils.data.Dataset):
 
 def loader(batch_size=128):
 
+    # start
+    print("start loading data")
+
     bs = batch_size
 
     train_dataset = CityScapesDataset(
@@ -85,6 +81,9 @@ def loader(batch_size=128):
     train_loader = DataLoader(train_dataset, batch_size=bs, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=bs, shuffle=True)
 
+    # end
+    print("end loading data")
+
     return train_loader, val_loader
 
 
@@ -92,20 +91,21 @@ if __name__ == "__main__":
 
     train_loader, val_loader = loader()
 
-    for index, (img, label) in enumerate(train_loader):
-        print(img.shape)
-        print(label.shape)
+    # test data
+    # for index, (img, label) in enumerate(train_loader):
+    #     print(img.shape)
+    #     print(label.shape)
 
-        plt.figure(figsize=(10, 10))
-        plt.subplot(221)
-        plt.imshow((img[0, :, :, :].moveaxis(0, 2)))
-        plt.subplot(222)
-        plt.imshow(label[0, :, :])
+    #     plt.figure(figsize=(10, 10))
+    #     plt.subplot(221)
+    #     plt.imshow((img[0, :, :, :].moveaxis(0, 2)))
+    #     plt.subplot(222)
+    #     plt.imshow(label[0, :, :])
 
-        plt.subplot(223)
-        plt.imshow((img[6, :, :, :].moveaxis(0, 2)))
-        plt.subplot(224)
-        plt.imshow(label[6, :, :])
-        plt.show()
-        if index == 0:
-            break
+    #     plt.subplot(223)
+    #     plt.imshow((img[6, :, :, :].moveaxis(0, 2)))
+    #     plt.subplot(224)
+    #     plt.imshow(label[6, :, :])
+    #     plt.show()
+    #     if index == 0:
+    #         break

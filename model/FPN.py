@@ -4,11 +4,9 @@ See the paper "Feature Pyramid Networks for Object Detection" for more details.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.models.resnet import ResNet
 from math import sqrt
-from torch.autograd import Variable
 
-from backbone.resnet import ResNet101
+from .resnet import ResNet101
 
 
 class Bottleneck(nn.Module):
@@ -128,7 +126,6 @@ class FPN(nn.Module):
     def forward(self, x):
         # Bottom-up using backbone
         low_level_features = self.back_bone(x)
-        print(len(low_level_features))
         c1 = low_level_features[0]
         c2 = low_level_features[1]
         c3 = low_level_features[2]
