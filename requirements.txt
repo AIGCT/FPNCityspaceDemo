@@ -1,7 +1,9 @@
 cityscapesscripts==2.2.0
+openpyxl==3.0.10
+d2l==0.17.5
+torchsummary==1.5.1
+# 不需要torch可以注释掉下面的
 torch==1.10.2+cu113
 torch-tb-profiler==0.4.0
 torchaudio==0.10.2+cu113
-torchsummary==1.5.1
 torchvision==0.11.3+cu113
-openpyxl==3.0.10
