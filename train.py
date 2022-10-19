@@ -13,7 +13,7 @@ from utils.dataset import loader
 torch.manual_seed(42)
 warnings.filterwarnings("ignore")
 
-bs = 16
+bs = 32
 
 train_loader, val_loader = loader(batch_size=bs)
 
@@ -33,6 +33,8 @@ epochs_num = 50
 def trainer(net, train_loader, val_loader, loss, trainer, num_epochs, scheduler,
             devices=d2l.try_all_gpus()):
     timer, num_batches = d2l.Timer(), len(train_loader)
+
+    # 这一行导致在训练中画图，暂时不改
     animator = d2l.Animator(xlabel='epoch', xlim=[1, num_epochs], ylim=[0, 1],
                             legend=['train loss', 'train acc', 'test acc'])
     net = nn.DataParallel(net, device_ids=devices).to(devices[0])
