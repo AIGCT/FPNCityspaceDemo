@@ -48,7 +48,7 @@ def trainer(net, train_loader, val_loader, loss, trainer, num_epochs, scheduler,
     for epoch in range(num_epochs):
         # Sum of training loss, sum of training accuracy, no. of examples,
         # no. of predictions
-        print("starting epoch: ", epoch)
+        print("starting epoch: ", epoch + 1)
         # 4个维度：储存训练损失，训练准确度，实例数，特点数
         metric = d2l.Accumulator(4)
         for i, (features, labels) in enumerate(train_loader):
@@ -90,7 +90,8 @@ def trainer(net, train_loader, val_loader, loss, trainer, num_epochs, scheduler,
             os.makedirs("checkpoints")
 
         if np.mod(epoch+1, 5) == 0:
-            torch.save(model.state_dict(), 'checkpoints\FPNNet_{epoch+1}.pth')
+            torch.save(model.state_dict(),
+                       "checkpoints/FPN_{}.pth".format(epoch+1))
 
 
 if __name__ == "__main__":
